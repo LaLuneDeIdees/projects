@@ -5,7 +5,14 @@ const sqlite3 = require('sqlite3').verbose();
 const gl_db = new sqlite3.Database('pandus.db');
 var parseString = require('xml2js').parseString;
  
-const server = http.createServer((request, response) => {
+var options = {
+    key: fs.readFileSync('key.key'),
+    cert: fs.readFileSync('cert.crt'),
+    requestCert: false,
+    rejectUnauthorized: false
+};
+ 
+const server = http.createServer(options, (request, response) => {
 	
 	if(request.url.split('?')[0]==='/points'){
 		if(getattr(request.url,'cmd')==='get'){
