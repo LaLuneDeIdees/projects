@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  		 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+   crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+   integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+   crossorigin=""></script>
+    <style>
+      .map {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+      }
+    </style>
+    <title>Map</title>
+    <style>
+      .button{
+        width: 32px;
+        height: 32px;
+        border: 0;
+        box-shadow: 0 0 4px black;
+        margin: 4px;
+        background: white;
+      }
+      .button:active{
+        box-shadow: 0 0 0.1vw black;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <div style="width: 40px;height: 100vh;z-index: 10000;background: #aebfff;top: 0;position: absolute;left: 100vw;box-shadow: -1vw 0 1vw #00000030;transform: translateX(-100%);">
+      <div class="button" onclick="editPoint()"></div>
+    </div>
+
+
+    <script>
+    var mymap = L.map('map');//.setView([ 54.98772,82.87135], 16);
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {//https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    																																		//http://c.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg
+				maxZoom: 20
+		}).addTo(mymap);
+		
+/*
+var circle = L.circle([51.508, -0.11], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 500
+}).addTo(mymap);
+
+var polygon = L.polygon([
+    [51.509, -0.08],
+    [51.503, -0.06],
+    [51.51, -0.047]
+]).addTo(mymap);
+marker.bindPopup("<b>Hello world!</b><br><red style='color: red;'>I am a popup.</red>").openPopup();
+circle.bindPopup("I am a circle.");
+polygon.bindPopup("I am a polygon.");
+var popup = L.popup()
+    .setLatLng([51.4, -0.09])
+    .setContent("I am a standalone popup.")
+    .openOn(mymap);
+
+*/
+var popup = L.popup();
+function onMapClick(e) {
+    if(state==1){
+      var i = nowdisplaypoints.length;
+      nowdisplaypoints[i]={
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+        id: -1,
+        comm: '',
+        desc: 'Nothing',
+        status: 0
+      };
+      editPointList[i] = L.marker(nowdisplaypoints[i],{draggable: true}).addTo(mymap);
+      editPointList[i].bindPopup("<button onclick='editPointList["+i.toString()+"].closePopup();editPointList["+i.toString()+"].setLatLng({lat: 92,lng: 92});'>Удалить</button>"+
+                "<button onclick='"+
+                    'nowdisplaypoints['+i.toString()+'].desc='+
+                    'document.getElementById("desc'+i.toString()+'").innerText;'+ 
+
+                    'nowdisplaypoints['+i.toString()+'].status='+
+                    'document.getElementById("status'+i.toString()+'").innerText;'+ 
+
+                    'nowdisplaypoints['+i.toString()+'].comm='+
+                    'document.getElementById("comm'+i.toString()+'").innerText;'+ 
+                "'>OK</button>"+
+                "<br>DESC:<div id='desc"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].desc+"</div>"+
+                "<br>STATUS:<div id='status"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].status+"</div>"+
+                "<br>COMM:<div id='comm"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].comm+"</div>"+
+                "<br>ID:"+ nowdisplaypoints[i].id)
+    }
+    /*popup
+        .setLatLng(e.latlng)
+        .setContent(e.latlng.lat.toString()+','+e.latlng.lng.toString())
+        .openOn(mymap);*/
+}
+mymap.on('click', onMapClick);
+
+
+
+mymap.locate({setView: true, maxZoom: 18});
+
+function onLocationFound(e) {
+    var radius = e.accuracy;
+
+    L.marker(e.latlng).addTo(mymap)
+        .bindPopup("You are within " + radius + " meters from this point").openPopup();
+    mymap.setZoom(16);
+
+    //L.circle(e.latlng, radius).addTo(mymap);
+}
+
+function onLocationError(e) {
+    alert(e.message);
+}
+
+/*
+
+var greenIcon = L.icon({
+    iconUrl: 'leaf-green.png',
+    shadowUrl: 'leaf-shadow.png',
+
+    iconSize:     [38, 95], // size of the icon
+    shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+L.marker([51.5, -0.09], {icon: greenIcon}).addTo(map);
+
+var LeafIcon = L.Icon.extend({
+    options: {
+        shadowUrl: 'leaf-shadow.png',
+        iconSize:     [38, 95],
+        shadowSize:   [50, 64],
+        iconAnchor:   [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor:  [-3, -76]
+    }
+});
+
+Теперь мы можем создать все три наших листовых иконки из этого класса и использовать их:
+
+var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
+    redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
+    orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
+
+
+
+
+var map = L.map('map', {
+    crs: L.CRS.Simple
+});
+
+Затем мы можем просто добавить a L.ImageOverlayс изображением starmap и его приблизительными границами:
+
+var bounds = [[0,0], [1000,1000]];
+var image = L.imageOverlay('uqm_map_full.png', bounds).addTo(map);
+
+var map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -5
+});
+*/
+    var polylineColor = [
+      '#555555',
+      '#ff0000',
+      '#ffff00',
+      '#00ff00'
+    ];
+    var nowdisplaypoints=[];
+    var nowdisplayobject=[];
+    var editPointList=[];
+
+    function updatemap(){
+      var bounds = mymap.getBounds();
+      console.log(bounds._southWest.lng);
+      if(mymap.getZoom()>=10 && state==0){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'points?cmd=get&minlat=' + (bounds._southWest.lat*2-bounds._northEast.lat).toString() +
+                                      '&minlng=' + (bounds._southWest.lng*2-bounds._northEast.lng).toString() +
+                                      '&maxlat=' + (bounds._northEast.lat*2-bounds._southWest.lat).toString() +
+                                      '&maxlng=' + (bounds._northEast.lng*2-bounds._southWest.lng).toString(), false);
+        xhr.send();
+        if (xhr.status != 200) {
+          alert( xhr.status + ': ' + xhr.statusText );
+        } else {
+          //alert( xhr.responseText );
+          parser = new DOMParser();
+          xmlDoc = parser.parseFromString(xhr.responseText,"text/xml");
+
+          var xmldata=xmlDoc.getElementsByTagName("point");
+
+              console.log(xmldata);
+          nowdisplaypoints=[];
+          for(var i=0;i<nowdisplayobject.length;i++){
+            nowdisplayobject[i].remove();
+          }
+          nowdisplayobject=[];
+          for(var i=0;i<xmldata.length;i++){
+            nowdisplaypoints[i] = {
+              lat: xmldata[i].getAttribute('lat'),
+              lng: xmldata[i].getAttribute('lng'),
+              comm: xmldata[i].getAttribute('comm'),
+              desc: xmldata[i].getAttribute('desc'),
+              status: xmldata[i].getAttribute('status'),
+              id: xmldata[i].getAttribute('id')
+            };
+          }
+
+          for(var i=0;i<nowdisplaypoints.length;i++){
+            if(nowdisplaypoints[i].comm===''){
+              nowdisplayobject[nowdisplayobject.length] = L.marker({
+                      lat: nowdisplaypoints[i].lat,
+                      lng: nowdisplaypoints[i].lng
+                    },
+                    {
+                      color: '#00ff00',
+                    }).addTo(mymap);
+              nowdisplayobject[nowdisplayobject.length-1].bindPopup(nowdisplaypoints[i].desc); 
+            }else{
+              var comm = nowdisplaypoints[i].comm.split(',');
+
+              for(var k=0;k<comm.length;k++){
+                var point2= undefined;
+                for(var x=0;x<nowdisplaypoints.length;x++){
+                  if(nowdisplaypoints[x].id==comm[k]){
+                    //if(x<=i)break;
+                    point2=nowdisplaypoints[x];
+                    break;
+                  }
+                }
+                if(point2!=undefined){
+                  nowdisplayobject[nowdisplayobject.length] = L.polyline([
+                        point2,
+                        nowdisplaypoints[i]
+                      ],
+                      {
+                        color: polylineColor[nowdisplaypoints[i].status],
+                      }).addTo(mymap);  
+                  nowdisplayobject[nowdisplayobject.length-1].bindPopup(nowdisplaypoints[i].desc); 
+                }
+              }
+            }
+          }
+        }
+      }else{
+        if(state==0)
+          nowdisplaypoints=[];
+          for(var i=0;i<nowdisplayobject.length;i++){
+            nowdisplayobject[i].remove();
+          }
+          nowdisplayobject=[];
+      }
+    }
+    var state = 0;
+    function editPoint(){
+      if(state!=0){
+        if(state!=1){
+          state=1;
+          startEditPoint();
+        }else{
+          state=0;
+        }
+      }else{
+          state=1;
+          startEditPoint();
+      }
+    }
+    var editPointlock=true;
+    function startEditPoint(){
+      if(state==1){
+        if(editPointlock){
+          updatemap();
+          for(var i=0;i<nowdisplayobject.length;i++){
+            nowdisplayobject[i].remove();
+          }
+          nowdisplayobject=[];
+
+
+          var tmplist = nowdisplaypoints.slice();
+          for(var i=0;i<nowdisplaypoints.length;i++){
+            editPointList[i] = L.marker(tmplist[i],{draggable: true}).addTo(mymap);
+            editPointList[i].bindPopup("<button onclick='editPointList["+i.toString()+"].closePopup();editPointList["+i.toString()+"].setLatLng({lat: 92,lng: 92});'>Удалить</button>"+
+                "<button onclick='"+
+                    'nowdisplaypoints['+i.toString()+'].desc='+
+                    'document.getElementById("desc'+i.toString()+'").innerText;'+ 
+
+                    'nowdisplaypoints['+i.toString()+'].status='+
+                    'document.getElementById("status'+i.toString()+'").innerText;'+ 
+
+                    'nowdisplaypoints['+i.toString()+'].comm='+
+                    'document.getElementById("comm'+i.toString()+'").innerText;'+ 
+                "'>OK</button>"+
+                "<br>DESC:<div id='desc"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].desc+"</div>"+
+                "<br>STATUS:<div id='status"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].status+"</div>"+
+                "<br>COMM:<div id='comm"+i.toString()+"' contenteditable>"+nowdisplaypoints[i].comm+"</div>"+
+                "<br>ID:"+ nowdisplaypoints[i].id);
+          }
+          editPointlock=false;
+        }
+        console.log('point');
+        window.requestAnimationFrame(startEditPoint);
+      }else{
+        editPointlock=true;
+        var out = document.createElement('xml');
+        for(var i=0;i<editPointList.length;i++){
+          var point = document.createElement('point');
+
+            var tmp = document.createElement('lat');
+            tmp.innerHTML = editPointList[i].getLatLng().lat;
+            point.appendChild(tmp);
+
+            tmp = document.createElement('lng');
+            tmp.innerHTML = editPointList[i].getLatLng().lng;
+            point.appendChild(tmp);
+
+            tmp = document.createElement('desc');
+            tmp.innerHTML = nowdisplaypoints[i].desc;
+            point.appendChild(tmp);
+
+            tmp = document.createElement('comm');
+            tmp.innerHTML = nowdisplaypoints[i].comm;
+            point.appendChild(tmp);
+
+            tmp = document.createElement('id');
+            tmp.innerHTML = nowdisplaypoints[i].id;
+            point.appendChild(tmp);
+
+            tmp = document.createElement('status');
+            tmp.innerHTML = nowdisplaypoints[i].status;;
+            point.appendChild(tmp);
+
+          out.appendChild(point);
+          editPointList[i].remove();
+          }
+          out = '<xml>'+out.innerHTML+'</xml>';
+          console.log(out);
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', 'points?cmd=set', false);
+          xhr.send(out);
+          if (xhr.status != 200) {
+            alert( xhr.status + ': ' + xhr.statusText );
+          } else {}
+          editPointList=[];
+      }
+    }
+    mymap.on('moveend',updatemap);
+    mymap.on('locationerror', onLocationError);
+    mymap.on('locationfound', onLocationFound);
+    </script>
+  </body>
+</html>
