@@ -4,6 +4,7 @@ var xml = require('xml');
 const sqlite3 = require('sqlite3').verbose();
 const gl_db = new sqlite3.Database('pandus.db');
 var parseString = require('xml2js').parseString;
+var fs = require('fs');
  
 var options = {
     key: fs.readFileSync('key.key'),
@@ -40,13 +41,12 @@ const server = http.createServer(options, (request, response) => {
 				});
 			},function complete(err, num){
 				dat+='</main>';
-				console.log(dat);
 				response.end(dat);
 			});
 		}else if(getattr(request.url,'cmd')==='set'){
 				request.on('data', chunk => {
 							parseString(chunk.toString(), function (err, result) {
-									console.log(result);
+
 									if(result.xml===''){
 										response.end('');
 										return;
@@ -58,7 +58,6 @@ const server = http.createServer(options, (request, response) => {
 																result.xml.point[i].status[0],
 																result.xml.point[i].comm[0],
 																result.xml.point[i].id[0]];
-										console.log(tdata);
 										const db = gl_db;
 										if(tdata[5]=='-1'){
 											db.run("INSERT INTO points VALUES("+tdata[0]+','+tdata[1]+',\''+tdata[2]+'\','+tdata[3]+',\''+tdata[4]+'\', (SELECT MAX(id)+1 FROM points))');
