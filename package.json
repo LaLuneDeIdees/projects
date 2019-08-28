@@ -1,6 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "main": "main.js",
   "dependencies": {
     "http": "0.0.0",
     "serve": "^11.1.0",
